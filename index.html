@@ -59,8 +59,19 @@
   .badge-pausado { background: #eab30820; color: var(--yellow); }
   .badge-idea { background: #a855f720; color: var(--purple); }
   .badge-hecho { background: #3b82f620; color: var(--accent); }
+  .project-tags { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .tag {
+    font-size: 10px; padding: 2px 7px; border-radius: 4px;
+    font-weight: 600; letter-spacing: 0.2px;
+  }
+  .tag-launched { background: #22c55e25; color: var(--green); }
+  .tag-dev { background: #f9731625; color: #f97316; }
+  .tag-mvp { background: #06b6d425; color: #06b6d4; }
+  .tag-beta { background: #eab30825; color: var(--yellow); }
+  .tag-prod { background: #22c55e25; color: var(--green); }
+  .project-url { font-size: 11px; color: var(--accent); margin-top: 6px; text-decoration: none; display: block; }
   .project-meta {
-    display: flex; gap: 12px; margin-top: 10px; font-size: 12px; color: var(--dim); flex-wrap: wrap;
+    display: flex; gap: 12px; margin-top: 8px; font-size: 12px; color: var(--dim); flex-wrap: wrap;
   }
   .project-meta span { display: flex; align-items: center; gap: 4px; }
   .next-step {
@@ -123,6 +134,25 @@
         <option value="hecho">Hecho</option>
       </select>
     </div>
+    <div class="field">
+      <label>Etapa</label>
+      <select id="f-stage">
+        <option value="idea">Idea</option>
+        <option value="dev">En desarrollo</option>
+        <option value="mvp">MVP</option>
+        <option value="beta">Beta</option>
+        <option value="prod">Produccion</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Lanzado</label>
+      <select id="f-launched">
+        <option value="no">No</option>
+        <option value="si">Si</option>
+      </select>
+    </div>
+    <div class="field"><label>URL Produccion</label><input id="f-url" placeholder="https://..."></div>
+    <div class="field"><label>Version</label><input id="f-version" placeholder="v1.0"></div>
     <div class="field"><label>Branch actual</label><input id="f-branch" placeholder="main"></div>
     <div class="field"><label>Ultimo cambio</label><input id="f-last" placeholder="Lo que hiciste"></div>
     <div class="field"><label>Proximo paso</label><textarea id="f-next" placeholder="Que sigue..."></textarea></div>
@@ -135,18 +165,18 @@
   </div>
 </div>
 <script>
-const STORAGE_KEY = 'leandro_projects_v1';
+const STORAGE_KEY = 'leandro_projects_v2';
 let projects = [];
 let editingId = null;
 let activeFilter = 'todos';
 const DEFAULT_PROJECTS = [
-  { id: crypto.randomUUID(), name: 'FaturasAL', desc: 'Facturacion: Airbnb + Booking + CVA -> InvoiceXpress / Moloni', status: 'activo', branch: 'feature/lodgify-moloni', last: 'Enforce single PMS + single invoicing provider', next: 'Terminar integracion Lodgify + Moloni. Testear flujo completo.', notes: 'v0.6 - Vercel deploy auto en main', ts: Date.now() },
-  { id: crypto.randomUUID(), name: 'SIBASync', desc: 'Check-in de huespedes + envio SIBA automatico', status: 'activo', branch: 'main', last: 'Debug Smoobu API (raw apartment sample)', next: 'Arreglar integracion Smoobu. Verificar cap max guests.', notes: 'Comparte Supabase con FaturasAL', ts: Date.now() },
-  { id: crypto.randomUUID(), name: 'INESync', desc: 'Sync de datos INE automatico', status: 'activo', branch: 'main', last: 'Legal pages (privacy, terms, cookies)', next: 'Listo v1.0 - monitorear y agregar features si necesario.', notes: 'Comparte Supabase con FaturasAL', ts: Date.now() },
-  { id: crypto.randomUUID(), name: 'AirInvoicer', desc: 'Chrome extension para generar facturas', status: 'activo', branch: 'main', last: 'Enforce download limits por plan, fix UI badges', next: 'Verificar flujo de password reset. Monitorear limites.', notes: 'v1.2.1 - Extension + Site', ts: Date.now() },
-  { id: crypto.randomUUID(), name: 'AirInvoicer Site', desc: 'Landing page / marketing site de AirInvoicer', status: 'activo', branch: 'main', last: 'YouTube demo video + password reset page', next: 'Webhook billing logic (keep highest plan rank).', notes: 'Repo: airinvoicer-site', ts: Date.now() },
-  { id: crypto.randomUUID(), name: 'MadeiraHostGuide', desc: 'Guia / directorio de alojamiento en Madeira', status: 'pausado', branch: 'main', last: 'Update precios setup service, coming soon masterclass', next: 'Actualizar offerings cuando esten listos.', notes: '', ts: Date.now() },
-  { id: crypto.randomUUID(), name: 'BuildFor', desc: 'Smart contracts platform - ERC-721 / ERC-1155', status: 'idea', branch: 'main', last: 'API server + frontend studio + deploy pipeline', next: 'Definir roadmap. Solo 2 commits hasta ahora.', notes: '', ts: Date.now() }
+  { id: crypto.randomUUID(), name: 'FaturasAL', desc: 'Facturacion: Airbnb + Booking + CVA -> InvoiceXpress / Moloni', status: 'activo', stage: 'prod', launched: 'si', url: 'https://faturas-al.vercel.app', version: 'v0.6', branch: 'feature/lodgify-moloni', last: 'Enforce single PMS + single invoicing provider', next: 'Terminar integracion Lodgify + Moloni. Testear flujo completo.', notes: 'Vercel deploy auto en main. Supabase backend.', ts: Date.now() },
+  { id: crypto.randomUUID(), name: 'SIBASync', desc: 'Check-in de huespedes + envio SIBA automatico', status: 'activo', stage: 'beta', launched: 'si', url: 'https://sibasync.vercel.app', version: '', branch: 'main', last: 'Debug Smoobu API (raw apartment sample)', next: 'Arreglar integracion Smoobu. Verificar cap max guests.', notes: 'Comparte Supabase con FaturasAL', ts: Date.now() },
+  { id: crypto.randomUUID(), name: 'INESync', desc: 'Sync de datos INE automatico', status: 'activo', stage: 'prod', launched: 'si', url: '', version: 'v1.0', branch: 'main', last: 'Legal pages (privacy, terms, cookies)', next: 'Monitorear y agregar features si necesario.', notes: 'Comparte Supabase con FaturasAL', ts: Date.now() },
+  { id: crypto.randomUUID(), name: 'AirInvoicer', desc: 'Chrome extension para generar facturas', status: 'activo', stage: 'prod', launched: 'si', url: '', version: 'v1.2.1', branch: 'main', last: 'Enforce download limits por plan, fix UI badges', next: 'Verificar flujo de password reset. Monitorear limites.', notes: 'Chrome Web Store', ts: Date.now() },
+  { id: crypto.randomUUID(), name: 'AirInvoicer Site', desc: 'Landing page / marketing site de AirInvoicer', status: 'activo', stage: 'prod', launched: 'si', url: '', version: '', branch: 'main', last: 'YouTube demo video + password reset page', next: 'Webhook billing logic (keep highest plan rank).', notes: '', ts: Date.now() },
+  { id: crypto.randomUUID(), name: 'MadeiraHostGuide', desc: 'Guia / directorio de alojamiento en Madeira', status: 'pausado', stage: 'prod', launched: 'si', url: '', version: '', branch: 'main', last: 'Update precios setup service, coming soon masterclass', next: 'Actualizar offerings cuando esten listos.', notes: '', ts: Date.now() },
+  { id: crypto.randomUUID(), name: 'BuildFor', desc: 'Smart contracts platform - ERC-721 / ERC-1155', status: 'idea', stage: 'idea', launched: 'no', url: '', version: '', branch: 'main', last: 'API server + frontend studio + deploy pipeline', next: 'Definir roadmap. Solo 2 commits hasta ahora.', notes: '', ts: Date.now() }
 ];
 function load() {
   const raw = localStorage.getItem(STORAGE_KEY);
@@ -165,13 +195,19 @@ function render() {
     const order = { activo: 0, pausado: 1, idea: 2, hecho: 3 };
     return (order[a.status] || 9) - (order[b.status] || 9) || b.ts - a.ts;
   });
+  var stageLabels = { idea: 'Idea', dev: 'En desarrollo', mvp: 'MVP', beta: 'Beta', prod: 'Produccion' };
   document.getElementById('list').innerHTML = sorted.map(p =>
     '<div class="project" onclick="openModal(\''+p.id+'\')">' +
       '<div class="project-header">' +
-        '<div class="project-name">'+esc(p.name)+'</div>' +
+        '<div class="project-name">'+esc(p.name)+(p.version ? ' <span style="font-size:12px;color:var(--dim);font-weight:400">'+esc(p.version)+'</span>' : '')+'</div>' +
         '<div class="badge badge-'+p.status+'">'+p.status+'</div>' +
       '</div>' +
       '<div class="project-desc">'+esc(p.desc)+'</div>' +
+      '<div class="project-tags">' +
+        (p.stage ? '<span class="tag tag-'+p.stage+'">'+(stageLabels[p.stage]||p.stage)+'</span>' : '') +
+        (p.launched === 'si' ? '<span class="tag tag-launched">LANZADO</span>' : '<span class="tag tag-dev">NO LANZADO</span>') +
+      '</div>' +
+      (p.url ? '<a class="project-url" href="'+esc(p.url)+'" onclick="event.stopPropagation()" target="_blank">'+esc(p.url)+'</a>' : '') +
       '<div class="project-meta">' +
         (p.branch ? '<span>&#9741; '+esc(p.branch)+'</span>' : '') +
         (p.last ? '<span>&#8635; '+esc(p.last)+'</span>' : '') +
@@ -192,6 +228,10 @@ function openModal(id) {
     document.getElementById('f-name').value = p.name || '';
     document.getElementById('f-desc').value = p.desc || '';
     document.getElementById('f-status').value = p.status || 'activo';
+    document.getElementById('f-stage').value = p.stage || 'dev';
+    document.getElementById('f-launched').value = p.launched || 'no';
+    document.getElementById('f-url').value = p.url || '';
+    document.getElementById('f-version').value = p.version || '';
     document.getElementById('f-branch').value = p.branch || '';
     document.getElementById('f-last').value = p.last || '';
     document.getElementById('f-next').value = p.next || '';
@@ -200,9 +240,10 @@ function openModal(id) {
   } else {
     editingId = null;
     document.getElementById('modalTitle').textContent = 'Nuevo Proyecto';
-    ['f-name','f-desc','f-branch','f-last','f-next','f-notes'].forEach(function(id) { document.getElementById(id).value = ''; });
+    ['f-name','f-desc','f-url','f-version','f-branch','f-last','f-next','f-notes'].forEach(function(id) { document.getElementById(id).value = ''; });
     document.getElementById('f-status').value = 'activo';
-    document.getElementById('deleteBtn').style.display = 'none';
+    document.getElementById('f-stage').value = 'dev';
+    document.getElementById('f-launched').value = 'no';    document.getElementById('deleteBtn').style.display = 'none';
   }
   overlay.classList.add('open');
 }
@@ -215,6 +256,10 @@ function save() {
     name: document.getElementById('f-name').value.trim(),
     desc: document.getElementById('f-desc').value.trim(),
     status: document.getElementById('f-status').value,
+    stage: document.getElementById('f-stage').value,
+    launched: document.getElementById('f-launched').value,
+    url: document.getElementById('f-url').value.trim(),
+    version: document.getElementById('f-version').value.trim(),
     branch: document.getElementById('f-branch').value.trim(),
     last: document.getElementById('f-last').value.trim(),
     next: document.getElementById('f-next').value.trim(),
